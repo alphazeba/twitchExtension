@@ -9,3 +9,8 @@
 .App-dark{
     color:#e5e3e8;
 }
+
+.questionBg{
+    background-color: rgba(120,120,120,0.5);
+    display: block;
+}

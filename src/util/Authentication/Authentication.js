@@ -12,8 +12,9 @@ export default class Authentication{
             opaque_id,
             user_id:false,
             isMod:false,
-            role:""
+            role:"",
         }
+        this.twitch = window.Twitch ? window.Twitch.ext : null
     }
 
     isLoggedIn(){
@@ -86,7 +87,7 @@ export default class Authentication{
      * 
      */
 
-    makeCall(url, method="GET"){
+    makeCall(url, method="GET", body=null){
         return new Promise((resolve, reject)=>{
             if(this.isAuthenticated()){
                 let headers={
@@ -94,13 +95,27 @@ export default class Authentication{
                     'Authorization': `Bearer ${this.state.token}`
                 }
     
-                fetch(url,
-                    {
-                        method,
-                        headers,
-                    })
-                    .then(response=>resolve(response))
-                    .catch(e=>reject(e))
+                if(body == null){
+                    this.twitch.rig.log("sending no body");
+                    fetch(url,
+                        {
+                            method,
+                            headers
+                        })
+                        .then(response=>resolve(response))
+                        .catch(e=>reject(e))
+                }
+                else {
+                    this.twitch.rig.log("sending: " + JSON.stringify(body));
+                    fetch(url,
+                        {
+                            method,
+                            headers,
+                            body: JSON.stringify(body)
+                        })
+                        .then(response=>resolve(response))
+                        .catch(e=>reject(e))
+                }
             }else{
                 reject('Unauthorized')
             }

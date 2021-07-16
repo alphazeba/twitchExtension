@@ -13,7 +13,17 @@ export default class App extends React.Component{
         this.state={
             finishedLoading:false,
             theme:'light',
-            isVisible:true
+            isVisible:true,
+            counter: 0,
+            question: this.getDefaultQuestion(),
+        }
+    }
+
+    getDefaultQuestion(){
+        return {
+            qid: '0',
+            question: '',
+            answers: [],
         }
     }
 
@@ -70,6 +80,55 @@ export default class App extends React.Component{
             this.twitch.unlisten('broadcast', ()=>console.log('successfully unlistened'))
         }
     }
+
+    handleClick(){
+        let newState = {...this.state};
+        newState.counter = newState.counter+1;
+        this.setState(newState);
+    }
+
+    handleTestCall(){
+        let newQuestion = {
+            question: "hello world",
+            answers: [
+                "one",
+                "two",
+                "three",
+            ]
+        }
+        this.Authentication.makeCall(this.getUrl('quiz/newQuestion'),'POST',newQuestion);
+    }
+
+    queryQuestions(){
+        this.Authentication.makeCall(this.getUrl('quiz/getQuestion'),'GET')
+        .then(response => response.json())
+        .then(response=>{
+            this.twitch.rig.log(JSON.stringify(response));
+            this.setState(()=>{
+                return {question:response}
+            })
+        })
+    }
+
+    handleRefreshQuestions(){
+        this.queryQuestions();
+    }
+
+    getUrl(ending){
+        return location.protocol + '//localhost:8081/' + ending;
+    }
+
+
+    renderQuestions(){
+        let answers = this.state.question.answers.map(a=><input 
+            key={a.id}
+            value={a.text}
+            type='button'/>)
+        return <div className='questionBg'>
+            <div>{this.state.question.question}</div>
+            {answers}
+        </div>
+    }
     
     render(){
         if(this.state.finishedLoading && this.state.isVisible){
@@ -79,8 +138,25 @@ export default class App extends React.Component{
                         <p>Hello world!</p>
                         <p>My token is: {this.Authentication.state.token}</p>
                         <p>My opaque ID is {this.Authentication.getOpaqueId()}.</p>
-                        <div>{this.Authentication.isModerator() ? <p>I am currently a mod, and here's a special mod button <input value='mod button' type='button'/></p>  : 'I am currently not a mod.'}</div>
+                        <div>{this.Authentication.isModerator() ? <p>I am currently a mod, and here's a special mod button 
+                            <input 
+                            value='mod button' 
+                            type='button'
+                            onClick={()=>this.handleClick()}
+                            /></p>  : 'I am currently not a mod.'}</div>
                         <p>I have {this.Authentication.hasSharedId() ? `shared my ID, and my user_id is ${this.Authentication.getUserId()}` : 'not shared my ID'}.</p>
+                        <p>{this.state.counter}</p>
+                        <input 
+                        value="test call"
+                        type='button'
+                        onClick={()=>this.handleTestCall()}
+                        />
+                        <input
+                        value="refreshQuestions"
+                        type='button'
+                        onClick={()=>this.handleRefreshQuestions()}
+                        />
+                        {this.renderQuestions()}
                     </div>
                 </div>
             )
