@@ -1,6 +1,7 @@
 import React from 'react'
 import Authentication from '../../util/Authentication/Authentication'
 import QuestionEntryForm from './QuestionEntryForm';
+import QuestionAnswerForm from './QuestionAnswerForm';
 
 import './App.css'
 import './General.css';
@@ -105,6 +106,14 @@ export default class App extends React.Component{
         this.Authentication.makeCall(this.getUrl('quiz/newQuestion'), 'POST', questionData);
     }
 
+    handleSubmitAnswer(answerId, questionId){
+        this.Authentication.makeCall(this.getUrl('quiz/sendAnswer'), 'POST', 
+        {
+            qid: questionId,
+            aid: answerId
+        });
+    }
+
     queryQuestions(){
         this.Authentication.makeCall(this.getUrl('quiz/getQuestion'),'GET')
         .then(response => response.json())
@@ -163,8 +172,16 @@ export default class App extends React.Component{
                         />
                         {this.renderQuestions()}
                     </div>
+                    <div className='anchor'>
+                        <span className='left'>
+                            <QuestionEntryForm onSubmit={(questionData)=>this.handleQuestionSubmit(questionData)}/>
+                        </span>
+                        <span className='left'>
+                            
+                            <QuestionAnswerForm question={this.state.question} onSubmitAnswer={(aid,qid)=>this.handleSubmitAnswer(aid,qid)} />
+                        </span>
+                    </div>
                     
-                    <QuestionEntryForm onSubmit={(questionData)=>this.handleQuestionSubmit(questionData)}/>
                 </div>
             )
         }else{

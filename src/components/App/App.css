@@ -14,3 +14,11 @@
     background-color: rgba(120,120,120,0.5);
     display: block;
 }
+
+.anchor {
+    position: relative;
+}
+
+.left {
+    float: left;
+}

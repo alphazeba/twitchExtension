@@ -22,6 +22,7 @@ const color = require('color');
 const ext = require('commander');
 const jsonwebtoken = require('jsonwebtoken');
 const request = require('request');
+const StatTracker = require('./StatTracker');
 
 // The developer rig uses self-signed certificates.  Node doesn't accept them
 // by default.  Do not use this in production.
@@ -118,6 +119,12 @@ const server = new Hapi.Server(serverOptions);
     handler: getQuestionHandler
   })
 
+  server.route({
+    method: 'POST',
+    path: '/quiz/sendAnswer',
+    handler: sendAnswerHandler
+  })
+
   // Start the server.
   await server.start();
   console.log(STRINGS.serverStarted, server.info.uri);
@@ -206,7 +213,8 @@ function colorQueryHandler(req) {
 var state = {
   qid: 0,
   question: "no question",
-  answers: []
+  answers: [],
+  stats: new StatTracker(5),
 }
 
 function generateGuid(){
@@ -223,10 +231,22 @@ function buildAnswer(answerText){
   }
 }
 
+function buildQuestion(questionText,answersStringArray){
+  let question = {
+    qid: 'q-'+generateGuid(),
+    question: questionText,
+    answers: answersStringArray.map(x=>buildAnswer(x))
+  }
+  return question;
+}
+
 function setQuestionState(questionText, answersStringArray){
-    state.qid = 'q-'+generateGuid();
-    state.question = questionText;
-    state.answers = answersStringArray.map((x)=>buildAnswer(x));
+    let question = buildQuestion(questionText,answersStringArray);
+
+    state.qid = question.qid;
+    state.question = question.question;
+    state.answers = question.answers;
+    state.stats.addQuestion(question);
     console.log(JSON.stringify(state));
 }
 
@@ -261,6 +281,20 @@ function getQuestionHandler(req,reply){
   const response = reply.response(getQuestionState());
   response.type('application/json');
   return response;
+}
+
+function sendAnswerHandler(req,reply){
+  const result = verifyAndDecode(req.headers.authorization);
+  const payload = req.payload;
+  if(payload){
+    const { qid: qid, aid: aid} = payload;
+    ingestAnswer(qid, aid);
+  }
+  return "success";
+}
+
+function ingestAnswer(questionId, answerId){
+  state.stats.ingestAnswer(questionId, answerId);
 }
 
 function attemptColorBroadcast(channelId) {

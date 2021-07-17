@@ -3,7 +3,7 @@ import React from 'react'
 import SimpleInput from './SimpleInput';
 import ToggleOpen from './ToggleOpen';
 
-import './QuestionEntryForm.css';
+import './form.css';
 import './General.css';
 
 
