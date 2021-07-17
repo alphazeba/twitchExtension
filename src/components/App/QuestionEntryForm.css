@@ -1,0 +1,15 @@
+
+
+.qefBG{
+    background-color: white;
+    display: inline-block;
+}
+
+.qefSpace{
+    padding: 1em;
+    padding-top: 0;
+}
+
+.qefAnswerSpace{
+    padding-bottom: 0.5em;
+}

@@ -1,7 +1,9 @@
 import React from 'react'
 import Authentication from '../../util/Authentication/Authentication'
+import QuestionEntryForm from './QuestionEntryForm';
 
 import './App.css'
+import './General.css';
 
 export default class App extends React.Component{
     constructor(props){
@@ -99,6 +101,10 @@ export default class App extends React.Component{
         this.Authentication.makeCall(this.getUrl('quiz/newQuestion'),'POST',newQuestion);
     }
 
+    handleQuestionSubmit(questionData){
+        this.Authentication.makeCall(this.getUrl('quiz/newQuestion'), 'POST', questionData);
+    }
+
     queryQuestions(){
         this.Authentication.makeCall(this.getUrl('quiz/getQuestion'),'GET')
         .then(response => response.json())
@@ -117,7 +123,6 @@ export default class App extends React.Component{
     getUrl(ending){
         return location.protocol + '//localhost:8081/' + ending;
     }
-
 
     renderQuestions(){
         let answers = this.state.question.answers.map(a=><input 
@@ -158,6 +163,8 @@ export default class App extends React.Component{
                         />
                         {this.renderQuestions()}
                     </div>
+                    
+                    <QuestionEntryForm onSubmit={(questionData)=>this.handleQuestionSubmit(questionData)}/>
                 </div>
             )
         }else{
